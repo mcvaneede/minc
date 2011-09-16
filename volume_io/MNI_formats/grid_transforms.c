@@ -215,11 +215,12 @@ VIOAPI  void  grid_inverse_transform_point(
 #endif
 
 /* ----------------------------- MNI Header -----------------------------------
-@NAME       : grid_inverse_transform_point
+@NAME       : grid_inverse_transform_point_with_input_steps
 @INPUT      : transform
               x
               y
               z
+              input_volume_steps
 @OUTPUT     : x_transformed
               y_transformed
               z_transformed
@@ -232,14 +233,18 @@ VIOAPI  void  grid_inverse_transform_point(
 @CALLS      : 
 @CREATED    : 1993?   Louis Collins
 @MODIFIED   : 1994    David MacDonald
-@MODIFIED   : 
+@MODIFIED   : 2011, Sep 16, Matthijs van Eede, added the possibility to pass
+                            along the step sizes of the input file which is 
+                            being resampled to determine the appropriate error
+                            margin (ftol)
 ---------------------------------------------------------------------------- */
 
-VIOAPI  void  grid_inverse_transform_point(
+VIOAPI  void  grid_inverse_transform_point_with_input_steps(
     General_transform   *transform,
     Real                x,
     Real                y,
     Real                z,
+    Real                *input_volume_steps,
     Real                *x_transformed,
     Real                *y_transformed,
     Real                *z_transformed )
@@ -295,13 +300,27 @@ VIOAPI  void  grid_inverse_transform_point(
       if( d == N_DIMENSIONS ) break;
     }
 
+    // If we have information about the step sizes of the input volume that is 
+    // being resampled, base the tolerance on those instead of the step sizes
+    // of the deformation grid; there can be a significant difference.
+    
     ftol = -1.0;
-    for_less( d, 0, FOUR_DIMS ) {
-      if( d == vector_dim ) continue;
-      if( sizes[d] == 1 ) continue;
-      if( ftol < 0 ) ftol = steps[d];
-      if( steps[d] < ftol ) ftol = steps[d];
+    if( input_volume_steps != NULL){
+      int i = 0;
+      for_less( i, 0, 3 ) {
+        if( ftol < 0 ) ftol = input_volume_steps[i];
+        if( input_volume_steps[i] < ftol ) ftol = input_volume_steps[i];
+      }
     }
+    else {
+      for_less( d, 0, FOUR_DIMS ) {
+        if( d == vector_dim ) continue;
+        if( sizes[d] == 1 ) continue;
+        if( ftol < 0 ) ftol = steps[d];
+        if( steps[d] < ftol ) ftol = steps[d];
+      }
+    }
+    
     ftol = ftol / 80.0;
     if( ftol > 0.05 ) ftol = 0.05;   // just to be sure for large grids
 
@@ -330,6 +349,41 @@ VIOAPI  void  grid_inverse_transform_point(
     *y_transformed = best_y;
     *z_transformed = best_z;
 }
+
+/* ----------------------------- MNI Header -----------------------------------
+@NAME       : grid_inverse_transform_point
+@INPUT      : transform
+              x
+              y
+              z
+@OUTPUT     : x_transformed
+              y_transformed
+              z_transformed
+@RETURNS    : 
+@DESCRIPTION: Transforms the point by the inverse of the grid transform.
+              Approximates the solution using a simple iterative step
+              method.
+@METHOD     : 
+@GLOBALS    : 
+@CALLS      : 
+@CREATED    : 1993?   Louis Collins
+@MODIFIED   : 1994    David MacDonald
+@MODIFIED   : 
+---------------------------------------------------------------------------- */
+
+VIOAPI  void  grid_inverse_transform_point(
+    General_transform   *transform,
+    Real                x,
+    Real                y,
+    Real                z,
+    Real                *x_transformed,
+    Real                *y_transformed,
+    Real                *z_transformed )
+{
+  grid_inverse_transform_point_with_input_steps(transform, x, y, z, NULL,
+                                           x_transformed, y_transformed, z_transformed );
+}
+
 
 /* ----------------------------- MNI Header -----------------------------------
 @NAME       : evaluate_grid_volume

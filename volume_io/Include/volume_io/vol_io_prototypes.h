@@ -1054,6 +1054,16 @@ VIOAPI  void  grid_transform_point(
     VIO_Real                *y_transformed,
     VIO_Real                *z_transformed );
 
+VIOAPI  void  grid_inverse_transform_point_with_input_steps(
+    VIO_General_transform   *transform,
+    VIO_Real                x,
+    VIO_Real                y,
+    VIO_Real                z,
+    VIO_Real                *input_volume_steps,
+    VIO_Real                *x_transformed,
+    VIO_Real                *y_transformed,
+    VIO_Real                *z_transformed );
+
 VIOAPI  void  grid_inverse_transform_point(
     VIO_General_transform   *transform,
     VIO_Real                x,
@@ -1305,11 +1315,31 @@ VIOAPI  VIO_Transform  *get_linear_transform_ptr(
 VIOAPI  VIO_Transform  *get_inverse_linear_transform_ptr(
     VIO_General_transform   *transform );
 
+VIOAPI  void  general_transform_point_with_input_volume(
+    VIO_General_transform   *transform,
+    VIO_Real                x,
+    VIO_Real                y,
+    VIO_Real                z,
+    VIO_Real                *input_volume_steps,
+    VIO_Real                *x_transformed,
+    VIO_Real                *y_transformed,
+    VIO_Real                *z_transformed );
+
 VIOAPI  void  general_transform_point(
     VIO_General_transform   *transform,
     VIO_Real                x,
     VIO_Real                y,
     VIO_Real                z,
+    VIO_Real                *x_transformed,
+    VIO_Real                *y_transformed,
+    VIO_Real                *z_transformed );
+
+VIOAPI  void  general_inverse_transform_point_with_input_volume(
+    VIO_General_transform   *transform,
+    VIO_Real                x,
+    VIO_Real                y,
+    VIO_Real                z,
+    VIO_Real                *input_volume_steps,
     VIO_Real                *x_transformed,
     VIO_Real                *y_transformed,
     VIO_Real                *z_transformed );
